@@ -73,3 +73,55 @@ func TestDecodeHeader(t *testing.T) {
 		t.Fatalf("unexpected parsing of big Len: %#v", h)
 	}
 }
+
+func TestGroup(t *testing.T) {
+	sm := []byte{
+		0x00, 0x00, 0x00, 0x10, // 16 Len
+		0x00, 0x00, 0x00, 0x04, // SubmitSMID
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+	}
+
+	smResp := []byte{
+		0x00, 0x00, 0x00, 0x10, // 16 Len
+		0x08, 0x00, 0x00, 0x04, // SubmitSMID
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+	}
+
+	smH, err := DecodeHeader(bytes.NewBuffer(sm))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	smRespH, err := DecodeHeader(bytes.NewBuffer(smResp))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	smG := smH.ID.Group()
+	smRespG := smRespH.ID.Group()
+
+	if smG != smRespG || smG != 0x04 {
+		t.Fatalf("unexpected group %o", smG)
+	}
+}
+
+func TestKey(t *testing.T) {
+	sm := []byte{
+		0x00, 0x00, 0x00, 0x10, // 16 Len
+		0x00, 0x00, 0x00, 0x04, // SubmitSMID
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+	}
+
+	smH, err := DecodeHeader(bytes.NewBuffer(sm))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	k := smH.Key()
+	if k != "4-0" {
+		t.Fatalf("unexpected key: %s", k)
+	}
+}

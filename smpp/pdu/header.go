@@ -53,6 +53,14 @@ func (id ID) String() string {
 	return idString[id]
 }
 
+// Group returns group name of a given ID.
+// For example: SubmitSM, SubmitSMResp should return the same group name.
+func (id ID) Group() byte {
+	b := make([]byte, 4)
+	binary.BigEndian.PutUint32(b, uint32(id))
+	return b[3]
+}
+
 // HeaderLen is the PDU header length.
 const HeaderLen = 16
 
@@ -62,6 +70,11 @@ type Header struct {
 	ID     ID
 	Status Status
 	Seq    uint32 // Sequence number.
+}
+
+// Key return key of header based on ID and Seq
+func (h *Header) Key() string {
+	return fmt.Sprintf("%o-%d", h.ID.Group(), h.Seq)
 }
 
 // DecodeHeader decodes binary PDU header data.
